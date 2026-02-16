@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.idea/
+.vscode/
+.claude/
+*.dcm
+.venv/
+data/
+.ipynb_checkpoints/
+*.parquet
+cdapython_log.txt
+*.egg-info/
+dist/
+build/
