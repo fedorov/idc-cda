@@ -127,3 +127,42 @@ result = get_subject_data(match_any=[
 # Or use wildcards
 result = get_subject_data(match_all=['upstream_id = TCGA-DD-*'])
 ```
+
+## Known Issues
+
+### `column_values()` crash with pandas StringDtype (cdapython v2.0.14)
+
+**Symptom:** `column_values()` fails with:
+```
+CRITICAL column_values(): ERROR: Unexpected data type `str` received; aborting.
+Please report this event to the CDA development team.
+```
+
+**Root cause:** In `cdapython/discover.py` lines 1094-1122, the dtype dispatch only handles `float64`, `object`, and `bool`. When pandas infers string columns as `StringDtype` (`'string'`) instead of `object` — which can happen intermittently depending on the CDA API response serialization — the code falls through to the error branch.
+
+The bug is in this logic:
+```python
+if result_dataframe[column].dtype == 'float64':
+    ...
+elif result_dataframe[column].dtype == 'object':  # ← misses 'string' dtype
+    ...
+elif result_dataframe[column].dtype == 'bool':
+    ...
+else:
+    log.critical(...)  # ← crashes here when dtype is 'string'
+```
+
+**Workaround:** Set this option before importing or using `cdapython`:
+```python
+import pandas as pd
+pd.set_option('future.infer_string', False)
+```
+
+This forces pandas to use `object` dtype for all string columns, avoiding the unhandled `StringDtype` path.
+
+**Affected versions:** `cdapython` 2.0.14 with `pandas` >= 2.1 (which introduced `StringDtype` inference). The issue is intermittent — it depends on how the CDA API serializes its response for a given query.
+
+**Upstream fix:** The `elif` at line 1103 should be:
+```python
+elif result_dataframe[column].dtype == 'object' or str(result_dataframe[column].dtype) == 'string':
+```

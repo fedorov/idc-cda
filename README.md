@@ -77,7 +77,7 @@ jupyter notebook
 - **CDA data currency.** CDA aggregates from periodic snapshots of each CRDC node. There may be a lag between when data appears in GDC/PDC/IDC and when CDA indexes it.
 - **Identifier matching is program-specific.** The `upstream_id = <PatientID>` approach works reliably for TCGA and CPTAC. For other programs (HTAN, NLST, etc.), identifier formats differ and may not match directly.
 - **No file download through CDA.** CDA provides metadata only. Actual data download requires using each node's tools: `idc-index` for imaging, GDC Data Transfer Tool for genomics, PDC tools for proteomics.
-- **`cdapython` API stability.** The `cdapython` package is under active development. Function signatures and behaviors may change between releases.
+- **`cdapython` API stability.** The `cdapython` package is under active development. Function signatures and behaviors may change between releases. There is a known bug in v2.0.14 where `column_values()` intermittently crashes with `"Unexpected data type 'str' received"` due to a pandas `StringDtype` incompatibility. The notebooks include a workaround (`pd.set_option('future.infer_string', False)`). See [developer/cda_overview.md](developer/cda_overview.md#known-issues) for details.
 - **IDC data version dependency.** Results are based on IDC v23. Future IDC releases may add collections or change PatientIDs.
 - **License awareness.** While the code in this repository is Apache-2.0, the underlying cancer data has its own licenses (mostly CC BY 4.0, some CC BY-NC). Always check `license_short_name` in IDC before using data.
 
